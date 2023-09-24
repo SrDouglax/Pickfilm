@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .animate-in {
-  animation: animate-in 500ms ease-in-out;
+  animation: animate-in 1s ease-in-out;
 }
 
 .styled-scroll::-webkit-scrollbar {
@@ -16,12 +16,17 @@
   background-color: #fff5;
 }
 
+.scroll-zero::-webkit-scrollbar {
+  height: 0;
+  width: 0;
+}
+
 @keyframes line-animate {
   0%{
-    transform: translateX(-150%);
+    transform: translateX(-200%);
   }
   100%{
-    transform: translateX(50%);
+    transform: translateX(100%);
   }
 }
 
@@ -35,6 +40,7 @@
     opacity: 1;
   }
 }
+
 
 @keyframes animate-in {
   0% {
