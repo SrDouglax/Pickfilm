@@ -10,19 +10,24 @@ import {
   MdMovie,
   MdMusicNote,
   MdLocalCafe,
-  MdFlight,
-  MdSentimentSatisfied,
-  MdDirectionsRun,
   MdLibraryBooks,
-  MdNaturePeople,
+  MdOutlineRocketLaunch,
   MdPeople,
-  MdLocalPlay,
   MdWhatshot,
   MdTheaters,
   MdLocalPizza,
-  MdChildCare,
+  MdOutlineSmartToy,
   MdBusinessCenter,
+  MdOutlineFamilyRestroom,
 } from "react-icons/md";
+import {
+  GiChainsaw,
+  GiDrippingKnife,
+  GiConcentrationOrb,
+  GiChemicalArrow,
+  GiRocketFlight,
+} from "react-icons/gi";
+import { RiEmotionLaughFill, RiHeartsFill } from "react-icons/ri";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -30,28 +35,28 @@ const genres = [
   {
     id: 28,
     name: "Ação",
-    icon: MdDirectionsRun,
+    icon: GiChemicalArrow,
     bgColorClass: "bg-red-500",
     classNames: "shadow-red-800 hover:shadow-red-900 animate-in",
   },
   {
     id: 12,
     name: "Aventura",
-    icon: MdFlight,
+    icon: GiRocketFlight,
     bgColorClass: "bg-blue-500",
     classNames: "shadow-blue-800 hover:shadow-blue-900 animate-in",
   },
   {
     id: 16,
     name: "Animação",
-    icon: MdChildCare,
+    icon: MdOutlineSmartToy,
     bgColorClass: "bg-slate-500",
     classNames: "shadow-slate-800 hover:shadow-slate-900 animate-in",
   },
   {
     id: 35,
     name: "Comédia",
-    icon: MdSentimentSatisfied,
+    icon: RiEmotionLaughFill,
     bgColorClass: "bg-yellow-500",
     classNames: "shadow-yellow-800 hover:shadow-yellow-900 animate-in",
   },
@@ -79,14 +84,14 @@ const genres = [
   {
     id: 10751,
     name: "Família",
-    icon: MdChildCare,
+    icon: MdOutlineFamilyRestroom,
     bgColorClass: "bg-indigo-500",
     classNames: "shadow-indigo-800 hover:shadow-indigo-900 animate-in",
   },
   {
     id: 14,
     name: "Fantasia",
-    icon: MdNaturePeople,
+    icon: MdOutlineRocketLaunch,
     bgColorClass: "bg-purple-500",
     classNames: "shadow-purple-800 hover:shadow-purple-900 animate-in",
   },
@@ -100,7 +105,7 @@ const genres = [
   {
     id: 27,
     name: "Terror",
-    icon: MdLocalPlay,
+    icon: GiDrippingKnife,
     bgColorClass: "bg-pink-500",
     classNames: "shadow-pink-800 hover:shadow-pink-900 animate-in",
   },
@@ -121,14 +126,14 @@ const genres = [
   {
     id: 10749,
     name: "Romance",
-    icon: MdSentimentSatisfied,
+    icon: RiHeartsFill,
     bgColorClass: "bg-blue-500",
     classNames: "shadow-blue-800 hover:shadow-blue-900 animate-in",
   },
   {
     id: 878,
     name: "Ficção científica",
-    icon: MdWhatshot,
+    icon: GiConcentrationOrb,
     bgColorClass: "bg-slate-500",
     classNames: "shadow-slate-800 hover:shadow-slate-900 animate-in",
   },
@@ -142,7 +147,7 @@ const genres = [
   {
     id: 53,
     name: "Thriller",
-    icon: MdWhatshot,
+    icon: GiChainsaw,
     bgColorClass: "bg-pink-500",
     classNames: "shadow-pink-800 hover:shadow-pink-900 animate-in",
   },
@@ -281,34 +286,36 @@ export default function Home() {
           selectedGenre === undefined
             ? "opacity-100 scale-100 z-50"
             : "opacity-0 scale-90 z-0"
-        } absolute top-0 right-0 ease-in-out duration-200 flex flex-col items-center overflow-hidden w-full h-full px-4 py-8`}>
-        <Link href="/" className="text-4xl font-bold" style={montserrat.style}>
-          <span className="text-white">FIL</span>
-          <span className="text-violet-800">MEETER</span>
-        </Link>
-        <h2
-          className={`ease-in-out text-lg font-bold text-white duration-200 ${
-            selectedGenre == undefined ? "h-6 mt-4" : "h-0 overflow-hidden"
-          }`}
-          style={montserrat.style}>
-          O que deseja assistir hoje?
-        </h2>
-        <section
-          className={`max-w-4xl w-full mt-2 gap-3 grid grid-cols-1 sm:grid-cols-2 py-3 overflow-y-auto pr-3 styled-scroll ease-in-out duration-200 ${
-            selectedGenre == undefined ? " top-0" : "relative top-full"
-          }`}>
-          {genres.map((genre, index) => (
-            <GenreDisplay
-              key={index}
-              icon={genre.icon}
-              name={genre.name}
-              classNames={`${genre.bgColorClass} ${genre.classNames}`}
-              onClick={() => {
-                setSelectedGenre(genre);
-              }}
-            />
-          ))}
-        </section>
+        } absolute top-0 right-0 ease-in-out duration-200 flex flex-col items-center overflow-hidden w-full h-full`}>
+        <header className="w-full py-2 px-4 shadow-xl">
+          <Link href="/" className="text-xl font-bold" style={montserrat.style}>
+            <span className="text-white">FIL</span>
+            <span className="text-violet-800">MEETER</span>
+          </Link>
+        </header>
+        <div className="flex flex-col max-w-4xl w-full h-full px-4 py-4 overflow-y-auto">
+          <h2
+            className={`ease-in-out text-2xl font-bold text-white duration-200`}
+            style={montserrat.style}>
+            O que deseja assistir hoje?
+          </h2>
+          <section
+            className={`max-w-4xl w-full mt-2 gap-3 grid grid-cols-1 sm:grid-cols-2 py-3 overflow-y-auto pr-3 styled-scroll ease-in-out duration-200 ${
+              selectedGenre == undefined ? " top-0" : "relative top-full"
+            }`}>
+            {genres.map((genre, index) => (
+              <GenreDisplay
+                key={index}
+                icon={genre.icon}
+                name={genre.name}
+                classNames={`${genre.bgColorClass} ${genre.classNames}`}
+                onClick={() => {
+                  setSelectedGenre(genre);
+                }}
+              />
+            ))}
+          </section>
+        </div>
       </div>
       <div
         className={`${
@@ -321,7 +328,7 @@ export default function Home() {
           style={{
             backgroundImage: `url(https://image.tmdb.org/t/p/original${film?.backdrop_path})`,
           }}>
-          <div className="ease-in-out items-center duration-200 flex flex-col w-full bg-gradient-to-b from-[#0009] to-zinc-800">
+          <div className="scale-[1.01] ease-in-out items-center duration-200 flex flex-col w-full bg-gradient-to-b from-[#0009] to-zinc-800">
             <div className="max-w-xl w-full flex flex-col">
               <div className="flex w-full justify-between p-4 h-min">
                 <div className="flex gap-3 items-center">
@@ -409,30 +416,6 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    {(watchProviders?.length || 0) > 0 && (
-                      <div className="flex flex-col w-full gap-2">
-                        <h1 // Onde assistir
-                          className={"text-white text-2xl font-bold"}>
-                          Onder assistir
-                        </h1>
-                        <div className="flex relative w-full">
-                          <div className="top-0 -right-[2px] h-full w-24 md:hidden absolute z-10 bg-gradient-to-r from-transparent to-zinc-800"></div>
-                          <div className="flex gap-1 scroll-zero overflow-x-auto pr-20">
-                            {watchProviders?.map((e) => {
-                              return (
-                                <Image
-                                  className="rounded-lg w-16 h-16 bg-black bg-opacity-50 hover:scale-100 scale-90 ease-in-out duration-200"
-                                  src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
-                                  alt={"provedor " + e.provider_name}
-                                  width={256}
-                                  height={256}
-                                />
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
@@ -444,6 +427,30 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {(watchProviders?.length || 0) > 0 && (
+          <div className="flex flex-col w-full gap-2 p-4">
+            <h1 // Onde assistir
+              className={"text-white text-2xl font-bold"}>
+              Onde assistir
+            </h1>
+            <div className="flex relative w-full">
+              <div className="top-0 -right-[2px] h-full w-24 md:hidden absolute z-10 bg-gradient-to-r from-transparent to-zinc-800"></div>
+              <div className="flex gap-1 scroll-zero overflow-x-auto pr-20">
+                {watchProviders?.map((e) => {
+                  return (
+                    <Image
+                      className="rounded-lg w-16 h-16 bg-black bg-opacity-50 hover:scale-100 scale-90 ease-in-out duration-200"
+                      src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
+                      alt={"provedor " + e.provider_name}
+                      width={256}
+                      height={256}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
