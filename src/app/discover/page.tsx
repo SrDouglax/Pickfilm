@@ -322,7 +322,7 @@ export default function Home() {
           selectedGenre !== undefined
             ? "opacity-100 scale-100 z-50"
             : "opacity-0 scale-110 z-0"
-        } ease-in-out duration-200 flex flex-col w-full absolute h-full top-0 left-1/2 -translate-x-1/2`}>
+        } ease-in-out duration-200 flex flex-col w-full absolute h-full top-0 left-1/2 -translate-x-1/2 items-center`}>
         <div
           className="ease-in-out duration-200 flex flex-col w-full bg-center bg-cover"
           style={{
@@ -428,7 +428,7 @@ export default function Home() {
           </div>
         </div>
         {(watchProviders?.length || 0) > 0 && (
-          <div className="flex flex-col w-full gap-2 p-4">
+          <div className="flex flex-col w-full gap-2 p-4 max-w-xl">
             <h1 // Onde assistir
               className={"text-white text-2xl font-bold"}>
               Onde assistir
