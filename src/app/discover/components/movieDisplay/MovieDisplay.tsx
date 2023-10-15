@@ -228,13 +228,10 @@ export default function MovieDisplay({
                       className="flex h-56 gap-4">
                       {/* Foto do filme */}
                       {film?.poster_path && (
-                        <Image
+                        <img
                           src={`https://image.tmdb.org/t/p/original${film?.poster_path}`}
                           className="flex-shrink-0 object-cover h-full bg-black bg-opacity-50 rounded-lg w-min"
                           alt={"Poster do filme"}
-                          width={2000}
-                          height={3000}
-                          priority
                         />
                       )}
                       {/* Informações do filme */}
@@ -305,13 +302,11 @@ export default function MovieDisplay({
               <div className="flex gap-1 pr-20 overflow-x-auto scroll-zero">
                 {watchProviders?.map((e) => {
                   return (
-                    <Image
+                    <img
                       className="object-cover w-16 h-16 duration-200 ease-in-out bg-black bg-opacity-50 rounded-lg hover:scale-90"
                       src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
                       alt={"provedor " + e.provider_name}
                       key={e.provider_id}
-                      width={256}
-                      height={256}
                     />
                   );
                 })}
@@ -345,12 +340,10 @@ export default function MovieDisplay({
                       className="flex flex-col flex-shrink-0 w-48 overflow-hidden rounded-lg shadow bg-zinc-900"
                       key={e.credit_id}>
                       {e.profile_path && (
-                        <Image
+                        <img
                           className="object-cover w-full duration-200 ease-in-out bg-white bg-opacity-50 aspect-square"
                           src={`https://image.tmdb.org/t/p/original${e.profile_path}`}
                           alt={"Foto de " + e.name}
-                          width={256}
-                          height={256}
                         />
                       )}
                       {!e.profile_path && (

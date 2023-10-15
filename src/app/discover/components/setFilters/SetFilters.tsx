@@ -251,12 +251,10 @@ export default function SetFilters({
                           return data;
                         });
                   }}>
-                  <Image
+                  <img
                     className="object-cover aspect-square"
                     src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
                     alt={""}
-                    width={256}
-                    height={256}
                   />
                 </div>
               );
