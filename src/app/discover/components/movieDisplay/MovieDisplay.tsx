@@ -89,12 +89,20 @@ export default function MovieDisplay({
   const [lastReset, setLastReset] = useState<number>(0);
   const [watchProviders, setWatchProviders] = useState<watchProviderType[]>();
   const [cast, setCast] = useState<actorType[]>();
+  const [filterSorted, setFilterSorted] = useState<string>("");
 
   useEffect(() => {
     if (selectedGenre) {
       setFilm(undefined);
       setWatchProviders(undefined);
       setCast(undefined);
+
+      const filtersMap = {
+        "popularity.desc": "Popularidade",
+        "revenue.desc": "Mais Rentaveis",
+        "vote_count.desc": "Melhores Avaliados",
+        "primary_release_date.desc": "Mais Recentes",
+      };
 
       let sortList = [];
       filters?.enabledSorts.popularity ? sortList.push("popularity.desc") : null;
@@ -103,7 +111,9 @@ export default function MovieDisplay({
       filters?.enabledSorts.date ? sortList.push("primary_release_date.desc") : null;
       const sort = sortList[Math.round((sortList.length - 1) * Math.random())];
 
-      const page = Math.round(10 * Math.random()) + 1;
+      setFilterSorted((filtersMap as any)[sort]);
+
+      const page = Math.round(20 * Math.random()) + 1;
 
       const adultFilter = `${filters?.adult ? "" : "&include_adult=false"}`;
 
@@ -111,10 +121,15 @@ export default function MovieDisplay({
         "|"
       )}`;
 
+      var releaseDateObj = new Date();
+      releaseDateObj.setDate(new Date().getDate() - 1);
+      const releaseDate = `&primary_release_date.lte=${
+        releaseDateObj.toISOString().split("T")[0]
+      }`;
+
       const url = `https://api.themoviedb.org/3/discover/movie?language=pt-BR&page=${page}&sort_by=${sort}${
         selectedGenre.id >= 0 ? `&with_genres=${selectedGenre?.id}` : ""
-      }${adultFilter}${watchProviders}`;
-      console.log(url);
+      }${adultFilter}${watchProviders}${releaseDate}`;
 
       const options = {
         method: "GET",
@@ -129,15 +144,12 @@ export default function MovieDisplay({
         .then((res) => res.json())
         .then((json) => {
           const selectedFilm: filmType = json.results[Math.round(Math.random() * 19)];
-          console.log(selectedFilm, json);
           fetch(
             `https://api.themoviedb.org/3/movie/${selectedFilm.id}?language=pt-BR`,
             options
           )
             .then((res) => res.json())
             .then((json) => {
-              console.log(json);
-
               setFilm(json);
             });
           fetch(
@@ -198,13 +210,20 @@ export default function MovieDisplay({
               {film !== undefined && (
                 <div className="flex flex-col w-full h-full px-4">
                   <div className="flex flex-col gap-4">
-                    <h1 // Título
-                      className={"text-white text-3xl font-bold"}>
-                      {film?.title}
-                      <span className="ml-3 text-base text-white text-opacity-50">
-                        ({new Date(film?.release_date || Date.now()).getFullYear()})
-                      </span>
-                    </h1>
+                    <div className="flex w-full flex-col">
+                      <h1 // Título
+                        className={"text-white text-3xl font-bold"}>
+                        {film?.title}
+                        <span
+                          aria-label={new Date().toISOString()}
+                          className="ml-3 text-base text-white text-opacity-50">
+                          ({new Date(film?.release_date || Date.now()).getFullYear()})
+                        </span>
+                      </h1>
+                      <p className="opacity-50 text-white">
+                        {filterSorted !== undefined ? `${filterSorted}` : ""}
+                      </p>
+                    </div>
                     <div // Foto e informações
                       className="flex h-56 gap-4">
                       {/* Foto do filme */}
@@ -242,7 +261,7 @@ export default function MovieDisplay({
                           })}
                         </div>
                         <div // Tempo e Estrelas
-                          className="flex gap-4">
+                          className="flex flex-col sm:flex-row sm:gap-4">
                           <div className="flex items-center gap-1 text-white text-opacity-50">
                             <MdAccessTimeFilled className="text-lg" />
                             {typeof film?.runtime === "number" && (
@@ -256,7 +275,8 @@ export default function MovieDisplay({
                             <MdStar className="text-lg" />
                             {typeof film?.runtime === "number" && (
                               <p className="tracking-wide">
-                                {film.vote_average.toFixed(1)}/10
+                                {film.vote_average.toFixed(1)}/10{" "}
+                                <span className="opacity-50">({film.vote_count})</span>
                               </p>
                             )}
                           </div>
@@ -299,7 +319,7 @@ export default function MovieDisplay({
             </div>
           </div>
         )}
-        {film !== undefined && (
+        {(film?.production_companies?.length || 0) > 0 && (
           <div className="flex flex-col w-full max-w-xl px-4 pt-4 text-white">
             <h1 // Produção
               className={"text-2xl font-bold"}>
@@ -319,7 +339,7 @@ export default function MovieDisplay({
             <div className="relative flex w-full">
               <div className="top-0 -right-[2px] h-full w-12 absolute z-10 bg-gradient-to-r from-transparent to-zinc-800"></div>
               <div className="flex gap-3 pr-20 overflow-x-auto scroll-zero">
-                {cast?.slice(0,15)?.map((e) => {
+                {cast?.slice(0, 15)?.map((e) => {
                   return (
                     <div
                       className="flex flex-col flex-shrink-0 w-48 overflow-hidden rounded-lg shadow bg-zinc-900"
