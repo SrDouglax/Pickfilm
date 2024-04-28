@@ -28,7 +28,7 @@ export default function Home() {
         showFilterOptions={showFilterOptions}
         setShowFilterOptions={setShowFilterOptions}
       />
-      <MovieDisplay selectedGenre={selectedGenre} setSelectedGenre={setSelectedGenre} filters={filters}/>
+      <MovieDisplay selectedGenre={selectedGenre} setFilters={setFilters} setSelectedGenre={setSelectedGenre} filters={filters}/>
       <SetFilters
         filters={filters}
         setFilters={setFilters}
