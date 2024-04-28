@@ -199,7 +199,7 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
                       {film?.poster_path && (
                         <img
                           src={`https://image.tmdb.org/t/p/original${film?.poster_path}`}
-                          className="flex-shrink-0 object-cover h-full bg-black bg-opacity-50 rounded-lg"
+                          className="flex-shrink-0 object-cover h-full bg-black bg-opacity-50 rounded-lg max-w-[50%]"
                           alt={"Poster do filme"}
                         />
                       )}
