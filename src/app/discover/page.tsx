@@ -12,12 +12,12 @@ export default function Home() {
   const [filters, setFilters] = useState<filterType>({
     adult: true,
     enabledSorts: {
-      date: true,
+      date: false,
       popularity: true,
       revenue: true,
-      votes: true
+      votes: true,
     },
-    watchProviders: []
+    watchProviders: [],
   });
 
   return (
@@ -28,13 +28,8 @@ export default function Home() {
         showFilterOptions={showFilterOptions}
         setShowFilterOptions={setShowFilterOptions}
       />
-      <MovieDisplay selectedGenre={selectedGenre} setFilters={setFilters} setSelectedGenre={setSelectedGenre} filters={filters}/>
-      <SetFilters
-        filters={filters}
-        setFilters={setFilters}
-        showFilterOptions={showFilterOptions}
-        setShowFilterOptions={setShowFilterOptions}
-      />
+      <MovieDisplay selectedGenre={selectedGenre} setFilters={setFilters} setSelectedGenre={setSelectedGenre} filters={filters} />
+      <SetFilters filters={filters} setFilters={setFilters} showFilterOptions={showFilterOptions} setShowFilterOptions={setShowFilterOptions} />
     </main>
   );
 }

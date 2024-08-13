@@ -1,8 +1,7 @@
 "use client";
-import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin } from "react-icons/md";
+import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin, MdFilterAlt } from "react-icons/md";
 import { genreType, genres } from "../allGenres/AllGenres";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import Image from "next/image";
 import { filterType } from "../setFilters/SetFilters";
 
 interface filmType {
@@ -74,6 +73,19 @@ interface watchProviderType {
   provider_name: string;
 }
 
+interface VideoType {
+  iso_639_1: string;
+  iso_3166_1: string;
+  name: string;
+  key: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+  published_at: string;
+  id: string;
+}
+
 interface MovieDisplayProps {
   filters?: filterType;
   setFilters: Dispatch<SetStateAction<filterType>>;
@@ -86,13 +98,16 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
   const [lastReset, setLastReset] = useState<number>(0);
   const [watchProviders, setWatchProviders] = useState<watchProviderType[]>();
   const [cast, setCast] = useState<actorType[]>();
+  const [trailer, setTrailer] = useState<VideoType>();
   const [filterSorted, setFilterSorted] = useState<string>("");
+  const [rotate, setRotate] = useState<boolean>(false);
 
   useEffect(() => {
     if (selectedGenre) {
       setFilm(undefined);
       setWatchProviders(undefined);
       setCast(undefined);
+      setTrailer(undefined);
 
       const filtersMap = {
         "popularity.desc": "Popularidade",
@@ -120,7 +135,7 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
       releaseDateObj.setDate(new Date().getDate() - 1);
       const releaseDate = `&primary_release_date.lte=${releaseDateObj.toISOString().split("T")[0]}`;
 
-      const url = `https://api.themoviedb.org/3/discover/movie?language=pt-BR&page=${page}&sort_by=${sort}${
+      const url = `https://api.themoviedb.org/3/discover/movie?language=pt-BR&include_video=true&page=${page}&sort_by=${sort}${
         selectedGenre.id >= 0 ? `&with_genres=${selectedGenre?.id}` : ""
       }${adultFilter}${watchProviders}${releaseDate}`;
 
@@ -141,6 +156,13 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
             .then((res) => res.json())
             .then((json) => {
               setFilm(json);
+              console.log(json);
+            });
+          fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/videos?language=pt-BR`, options)
+            .then((res) => res.json())
+            .then((json) => {
+              console.log(json?.results);
+              setTrailer(json?.results.find((e: any) => e.type === "Trailer"));
             });
           fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/watch/providers`, options)
             .then((res) => res.json())
@@ -157,6 +179,12 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
     }
   }, [selectedGenre, lastReset]);
 
+  const handleRefreshClick = () => {
+    setRotate(true);
+    setLastReset(Date.now());
+    setTimeout(() => setRotate(false), 1000); // Remove a rotação após a animação
+  };
+
   return (
     <div
       className={`${
@@ -168,17 +196,16 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
           <p className="text-xl text-white">{selectedGenre?.name}</p>
         </div>
         <div className="flex items-center gap-2">
-          <MdRefresh onClick={() => setLastReset(Date.now())} className={`text-white text-3xl cursor-pointer`} />
           <MdClose onClick={() => setSelectedGenre(undefined)} className={`text-white text-4xl cursor-pointer`} />
         </div>
       </div>
-      <div className="flex flex-col items-center w-full h-full overflow-x-hidden overflow-y-auto styled-scroll">
-        <div
-          className="flex-col w-full ease-in-out bg-center bg-cover duration-200flex"
-          style={{
-            backgroundImage: `url(https://image.tmdb.org/t/p/original${film?.backdrop_path})`,
-          }}>
-          <div className="scale-[1.01] ease-in-out items-center pt-4 sm:pt-12 duration-200 flex flex-col w-full bg-gradient-to-b from-[#0009] to-zinc-800">
+      <div className="flex pb-20 flex-col items-center w-full h-full overflow-x-hidden overflow-y-auto styled-scroll">
+        <div className="flex-col relative w-full ease-in-out duration-200 flex">
+          <div
+            style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${film?.backdrop_path})` }}
+            className="absolute bg-cover z-0 bg-center w-full h-full [-webkit-mask-image:linear-gradient(black,transparent)] [mask-image:linear-gradient(black,transparent)]"
+          />
+          <div className="relative z-10 scale-[1.01] ease-in-out items-center pt-4 sm:pt-12 duration-200 flex flex-col w-full bg-gradient-to-r from-black/75 to-[#0E0A1BAA] ">
             <div className="flex flex-col w-full max-w-xl">
               {film !== undefined && (
                 <div className="flex flex-col w-full h-full px-4">
@@ -256,6 +283,22 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
             </div>
           </div>
         </div>
+        {trailer?.id && (
+          <div className="flex flex-col w-full max-w-xl gap-2 px-4 pt-4">
+            <h1 // Onde assistir
+              className={"text-white text-2xl font-bold"}>
+              Trailer
+            </h1>
+            <iframe
+              width="400"
+              height="230"
+              src={"https://www.youtube.com/embed/" + trailer.key}
+              title="Embed videos and playlists"
+              className="bg-white/5 rounded-lg w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen></iframe>
+          </div>
+        )}
         {(watchProviders?.length || 0) > 0 && (
           <div className="flex flex-col w-full max-w-xl gap-2 px-4 pt-4">
             <h1 // Onde assistir
@@ -263,11 +306,11 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
               Onde assistir <span className="ml-1 text-lg opacity-75">(JustWatch)</span>
             </h1>
             <div className="relative flex w-full">
-              <div className="top-0 -right-[2px] h-full w-12 absolute z-10 bg-gradient-to-r from-transparent to-zinc-800"></div>
-              <div className="flex gap-1 pr-20 overflow-y-auto overflow-x-auto scroll-zero">
+              <div className="top-0 -right-[2px] h-full w-12 absolute z-10 "></div>
+              <div className="flex gap-1 pr-20 overflow-y-auto overflow-x-auto scroll-zero [-webkit-mask-image:linear-gradient(90deg,rgba(255,255,255,1)0%,rgba(255,255,255,1)83%,rgba(0,0,0,0)100%)] [mask-image:linear-gradient(90deg,rgba(255,255,255,1)0%,rgba(255,255,255,1)90%,rgba(0,0,0,0)100%)]">
                 {watchProviders?.map((e) => {
                   return (
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <img
                         className="object-cover w-16 cursor-pointer h-16 duration-200 ease-in-out bg-black bg-opacity-50 rounded-lg hover:scale-90"
                         src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
@@ -281,7 +324,7 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
                               return { ...prev, watchProviders: [...prev.watchProviders, e.provider_id] };
                             }
                           });
-                          setLastReset(Date.now())
+                          setLastReset(Date.now());
                         }}
                       />
                       {filters?.watchProviders.includes(e.provider_id) && <MdPushPin className="absolute text-white top-1 right-0" />}
@@ -308,8 +351,7 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
               Elenco
             </h1>
             <div className="relative flex w-full">
-              <div className="top-0 -right-[2px] h-full w-12 absolute z-10 bg-gradient-to-r from-transparent to-zinc-800"></div>
-              <div className="flex gap-3 pr-20 overflow-x-auto scroll-zero">
+              <div className="flex gap-3 pr-20 overflow-x-auto scroll-zero [-webkit-mask-image:linear-gradient(90deg,rgba(255,255,255,1)0%,rgba(255,255,255,1)83%,rgba(0,0,0,0)100%)] [mask-image:linear-gradient(90deg,rgba(255,255,255,1)0%,rgba(255,255,255,1)90%,rgba(0,0,0,0)100%)]">
                 {cast?.slice(0, 15)?.map((e) => {
                   return (
                     <div className="flex flex-col flex-shrink-0 w-48 overflow-hidden rounded-lg shadow bg-zinc-900" key={e.credit_id}>
@@ -332,6 +374,14 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
             </div>
           </div>
         )}
+      </div>
+      <div className="z-10 absolute left-0 bottom-0 md:px-8 md:mb-4 px-2 mb-2 w-full md:justify-end justify-center flex">
+        <div
+          onClick={() => handleRefreshClick()}
+          className="cursor-pointer rounded-full md:w-max md:px-8 flex gap-2 justify-center font-semibold items-center border-white/10 md:bg-black/40 bg-black/75 shadow-lg border text-white backdrop-blur-xl w-3/4 py-3">
+          <MdRefresh className={`text-white text-3xl ${rotate ? "animate-spin360" : ""}`} />
+          <p className="text-2xl">Novo</p>
+        </div>
       </div>
     </div>
   );

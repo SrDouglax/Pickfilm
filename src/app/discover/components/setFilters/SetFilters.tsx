@@ -83,14 +83,14 @@ export default function SetFilters({
     <div
       className={`${
         showFilterOptions ? "opacity-100 scale-100 z-50" : "opacity-0 scale-110 z-0"
-      } ease-in-out duration-200 flex flex-col w-full absolute h-full top-0 left-0 items-center`}>
+      } ease-in-out duration-200 flex flex-col w-full absolute h-full top-0 left-0 items-center bg-gradient-to-r from-black to-[#0E0A1B]`}>
       <div className="flex justify-between w-full px-4 py-2 shadow-lg h-min">
         <div className="flex items-center gap-2">
           <MdFilterAlt
             className="text-2xl text-white cursor-pointer"
-            onClick={() => setShowFilterOptions(true)}
+            onClick={() => {setShowFilterOptions(true)}}
           />
-          <p className="text-xl text-white">Filtros</p>
+          <p className="text-xl font-semibold text-white">Filtros</p>
         </div>
         <div className="flex items-center gap-2">
           <MdClose
