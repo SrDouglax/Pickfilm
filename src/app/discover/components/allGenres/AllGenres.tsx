@@ -196,8 +196,8 @@ export default function AllGenres({ selectedGenre, setSelectedGenre, showFilterO
             className="h-8 py-0.5 -translate-y-0.5 w-max aspect-auto object-contain"
           />
         </Link>
-        <div className="flex items-center text-white gap-1 font-semibold" onClick={() => setShowFilterOptions(true)}>
-          <MdFilterAlt className="text-white text-2xl cursor-pointer" />
+        <div className="flex items-center text-white gap-1 font-semibold cursor-pointer" onClick={() => setShowFilterOptions(true)}>
+          <MdFilterAlt className="text-white text-2xl" />
           Filtros
         </div>
       </header>

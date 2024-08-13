@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FILMEETER",
-  description: "Decida que filme ou série ver a seguir.",
+  title: "PICKFILM",
+  description: "Não decida que filme ou série ver a seguir.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
