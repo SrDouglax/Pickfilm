@@ -1,9 +1,9 @@
 # 🎲Randomize what you watch next.
 <p float="left" align="middle">
-  <img width="24%" src="https://github.com/SrDouglax/Filmeeter/assets/69745104/f1012fcd-1232-401f-acdf-7c942b8a2d92">
-  <img width="24%" src="https://github.com/SrDouglax/Filmeeter/assets/69745104/59fd8a9e-4561-4ebe-8dff-88c7a44a441b">
-  <img width="24%" src="https://github.com/SrDouglax/Filmeeter/assets/69745104/91ff7f70-e8d3-44d3-b05a-c2af08323438">
-  <img width="24%" src="https://github.com/SrDouglax/Filmeeter/assets/69745104/81561c50-3621-4749-83f2-405a8e1b3739">
+  <img width="24%" src="https://github.com/user-attachments/assets/54b72af0-111d-438c-87f6-a707901c1083">
+  <img width="24%" src="https://github.com/user-attachments/assets/d577ad6c-cb01-422f-b0d5-254da75eaf8e">
+  <img width="24%" src="https://github.com/user-attachments/assets/24df6d18-ecac-4e59-a727-778a7283cd2d">
+  <img width="24%" src="https://github.com/user-attachments/assets/4b2715ab-ea51-47f2-8caa-ed5e57984097">
 </p>
 
-Deploy: https://filmeeter.vercel.app
+Deploy: https://pickfilm.vercel.app
