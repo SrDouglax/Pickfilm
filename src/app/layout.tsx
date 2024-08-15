@@ -1,13 +1,13 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "PICKFILM",
   description: "Não decida que filme ou série ver a seguir.",
+  other: {
+    "google-site-verification": "tUP-lkB8SFrbA8mdORrM4TMiFKTmzr6KhaZvFHLgc2o",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
