@@ -1,9 +1,10 @@
 "use client";
-import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin, MdFilterAlt, MdArrowLeft } from "react-icons/md";
+import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin, MdFilterAlt, MdArrowLeft, MdShare } from "react-icons/md";
 import { BiSolidLeftArrow, BiSolidRightArrow } from "react-icons/bi";
 import { genreType, genres } from "../allGenres/AllGenres";
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect, Dispatch, SetStateAction, useCallback } from "react";
 import { filterType } from "../setFilters/SetFilters";
+import toast from "react-hot-toast";
 
 interface filmType {
   adult: boolean;
@@ -87,13 +88,6 @@ interface VideoType {
   id: string;
 }
 
-interface MovieDisplayProps {
-  filters?: filterType;
-  setFilters: Dispatch<SetStateAction<filterType>>;
-  selectedGenre?: genreType;
-  setSelectedGenre: Function;
-}
-
 interface FilmHistoryType {
   film: filmType;
   watchProviders: watchProviderType[];
@@ -101,7 +95,24 @@ interface FilmHistoryType {
   trailer: VideoType;
 }
 
-export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters, setFilters }: MovieDisplayProps) {
+const options = {
+  method: "GET",
+  headers: {
+    accept: "application/json",
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNThkZjI3NjVlNzVjZjcxOTU3OTQwOWQwYTZlZDE0ZCIsInN1YiI6IjYwNGU0N2I5NzMxNGExMDA0MGYzM2ZiOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.wcXwGa73OY0MtxHkeJtPxNLk6POBstoCWWEd-a9XOXs",
+  },
+};
+
+interface MovieDisplayProps {
+  filters?: filterType;
+  setFilters: Dispatch<SetStateAction<filterType>>;
+  selectedGenre?: genreType;
+  setSelectedGenre: Function;
+  starterFilmId?: number;
+}
+
+export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters, setFilters, starterFilmId }: MovieDisplayProps) {
   const [film, setFilm] = useState<filmType>();
   const [lastReset, setLastReset] = useState<number>(0);
   const [watchProviders, setWatchProviders] = useState<watchProviderType[]>();
@@ -112,10 +123,12 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
   const [filmHistoryIndex, setFilmHistoryIndex] = useState<number>(0);
   const [rotate, setRotate] = useState<boolean>(false);
   const [blur, setBlur] = useState<boolean>(false);
+  const [firstReq, setFirstReq] = useState<boolean>(false);
   const [_, refresh] = useState<number>(0);
 
   useEffect(() => {
-    if (selectedGenre) {
+    if (selectedGenre && (starterFilmId ? firstReq : true)) {
+      setFirstReq(true);
       setFilm(undefined);
       setWatchProviders(undefined);
       setCast(undefined);
@@ -151,55 +164,58 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
         selectedGenre.id >= 0 ? `&with_genres=${selectedGenre?.id}` : ""
       }${adultFilter}${watchProviders}${releaseDate}`;
 
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNThkZjI3NjVlNzVjZjcxOTU3OTQwOWQwYTZlZDE0ZCIsInN1YiI6IjYwNGU0N2I5NzMxNGExMDA0MGYzM2ZiOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.wcXwGa73OY0MtxHkeJtPxNLk6POBstoCWWEd-a9XOXs",
-        },
-      };
-
-      let _film: filmType;
-      let _trailer: VideoType;
-      let _watchProviders: watchProviderType[];
-      let _cast: actorType[];
       fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
           const selectedFilm: filmType = json.results[Math.round(Math.random() * 19)];
-          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}?language=pt-BR`, options)
-            .then((res) => res.json())
-            .then((json) => {
-              setBlur(true);
-              setFilm(json);
-              _film = json;
-            });
-          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/videos?language=pt-BR`, options)
-            .then((res) => res.json())
-            .then((json) => {
-              setTrailer(json?.results.find((e: any) => e.type === "Trailer"));
-              _trailer = json;
-            });
-          setBlur(false);
-          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/watch/providers`, options)
-            .then((res) => res.json())
-            .then(async (json) => {
-              setWatchProviders(json.results["BR"]?.flatrate);
-              _watchProviders = json.results["BR"]?.flatrate;
-              await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/credits?language=pt-BR`, options)
-                .then((res) => res.json())
-                .then((json) => {
-                  setCast(json.cast);
-                  _cast = json.cast;
-                });
-            });
-          const newHistory = [...filmHistory, { film: _film, watchProviders: _watchProviders, cast: _cast, trailer: _trailer }];
-          setFilmHistory(newHistory);
-          setFilmHistoryIndex(newHistory.length - 1);
+          getFilmData(selectedFilm.id);
         });
     }
   }, [selectedGenre, lastReset]);
+
+  useEffect(() => {
+    if (starterFilmId) {
+      setSelectedGenre(genres[0]);
+      getFilmData(starterFilmId);
+      setFirstReq(true);
+    }
+  }, []);
+
+  async function getFilmData(filmId: number) {
+    let _film: filmType;
+    let _trailer: VideoType;
+    let _watchProviders: watchProviderType[];
+    let _cast: actorType[];
+    await fetch(`https://api.themoviedb.org/3/movie/${filmId}?language=pt-BR`, options)
+      .then((res) => res.json())
+      .then((json) => {
+        setBlur(true);
+        setFilm(json);
+        _film = json;
+      });
+    await fetch(`https://api.themoviedb.org/3/movie/${filmId}/videos?language=pt-BR`, options)
+      .then((res) => res.json())
+      .then((json) => {
+        setTrailer(json?.results.find((e: any) => e.type === "Trailer"));
+        _trailer = json;
+      });
+    setBlur(false);
+    await fetch(`https://api.themoviedb.org/3/movie/${filmId}/watch/providers`, options)
+      .then((res) => res.json())
+      .then(async (json) => {
+        setWatchProviders(json.results["BR"]?.flatrate);
+        _watchProviders = json.results["BR"]?.flatrate;
+        await fetch(`https://api.themoviedb.org/3/movie/${filmId}/credits?language=pt-BR`, options)
+          .then((res) => res.json())
+          .then((json) => {
+            setCast(json.cast);
+            _cast = json.cast;
+          });
+      });
+    const newHistory = [...filmHistory, { film: _film!, watchProviders: _watchProviders!, cast: _cast!, trailer: _trailer! }];
+    setFilmHistory(newHistory);
+    setFilmHistoryIndex(newHistory.length - 1);
+  }
 
   const handleRefreshClick = () => {
     setRotate(true);
@@ -235,6 +251,23 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
     }
   };
 
+  function shareFilm() {
+    if (!film) return;
+    const dataToShare = {
+      title: film.title,
+      text: `Veja informações sobre ${film.title} no site ${window.location.host}`,
+      url: `${window.location.origin}/discover/${film.id}`,
+    };
+    if (navigator.canShare(dataToShare)) {
+      navigator.share(dataToShare).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/discover/${film?.id}`).then(
+        () => alert("Link copiado para a área de transferência!"),
+        () => alert("Erro ao copiar link")
+      );
+    }
+  }
+
   return (
     <div
       className={`${
@@ -245,8 +278,14 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
           <div className={`${genres.find((e) => e.id == selectedGenre?.id)?.bgColorClass} w-0.5 h-3/4 rounded-full`}></div>
           <p className="text-xl text-white">{selectedGenre?.name}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <MdClose onClick={() => setSelectedGenre(undefined)} className={`text-white text-4xl cursor-pointer`} />
+        <div className="flex items-center gap-3">
+          <MdShare onClick={() => shareFilm()} className={`text-white text-2xl cursor-pointer`} />
+          <MdClose
+            onClick={() => {
+              window.location.pathname == "/discover" ? setSelectedGenre(undefined) : window.location.replace("/discover");
+            }}
+            className={`text-white text-4xl cursor-pointer`}
+          />
         </div>
       </div>
       <div
