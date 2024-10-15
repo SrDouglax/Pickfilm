@@ -5,6 +5,7 @@ import { genreType, genres } from "../allGenres/AllGenres";
 import { useState, useEffect, Dispatch, SetStateAction, useCallback } from "react";
 import { filterType } from "../setFilters/SetFilters";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 interface filmType {
   adult: boolean;
@@ -388,10 +389,12 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
                 {watchProviders?.map((e) => {
                   return (
                     <div className="relative flex-shrink-0">
-                      <img
+                      <Image
                         className="object-cover w-16 cursor-pointer h-16 duration-200 ease-in-out bg-black bg-opacity-50 rounded-lg hover:scale-90"
                         src={`https://image.tmdb.org/t/p/original${e.logo_path}`}
                         alt={"provedor " + e.provider_name}
+                        width={256}
+                        height={256}
                         key={e.provider_id}
                         onClick={() => {
                           setFilters((prev) => {
@@ -433,9 +436,11 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
                   return (
                     <div className="flex flex-col flex-shrink-0 w-48 overflow-hidden rounded-lg shadow bg-zinc-900" key={e.credit_id}>
                       {e.profile_path && (
-                        <img
+                        <Image
                           className="object-cover w-full duration-200 ease-in-out bg-white bg-opacity-50 aspect-square"
                           src={`https://image.tmdb.org/t/p/original${e.profile_path}`}
+                          width={300}
+                          height={300}
                           alt={"Foto de " + e.name}
                         />
                       )}
