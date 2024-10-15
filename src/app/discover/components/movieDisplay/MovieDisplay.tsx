@@ -1,5 +1,6 @@
 "use client";
-import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin, MdFilterAlt } from "react-icons/md";
+import { MdRefresh, MdClose, MdAccessTimeFilled, MdStar, MdPushPin, MdFilterAlt, MdArrowLeft } from "react-icons/md";
+import { BiSolidLeftArrow, BiSolidRightArrow } from "react-icons/bi";
 import { genreType, genres } from "../allGenres/AllGenres";
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { filterType } from "../setFilters/SetFilters";
@@ -93,6 +94,13 @@ interface MovieDisplayProps {
   setSelectedGenre: Function;
 }
 
+interface FilmHistoryType {
+  film: filmType;
+  watchProviders: watchProviderType[];
+  cast: actorType[];
+  trailer: VideoType;
+}
+
 export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters, setFilters }: MovieDisplayProps) {
   const [film, setFilm] = useState<filmType>();
   const [lastReset, setLastReset] = useState<number>(0);
@@ -100,7 +108,11 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
   const [cast, setCast] = useState<actorType[]>();
   const [trailer, setTrailer] = useState<VideoType>();
   const [filterSorted, setFilterSorted] = useState<string>("");
+  const [filmHistory, setFilmHistory] = useState<FilmHistoryType[]>([]);
+  const [filmHistoryIndex, setFilmHistoryIndex] = useState<number>(0);
   const [rotate, setRotate] = useState<boolean>(false);
+  const [blur, setBlur] = useState<boolean>(false);
+  const [_, refresh] = useState<number>(0);
 
   useEffect(() => {
     if (selectedGenre) {
@@ -148,33 +160,43 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
         },
       };
 
+      let _film: filmType;
+      let _trailer: VideoType;
+      let _watchProviders: watchProviderType[];
+      let _cast: actorType[];
       fetch(url, options)
         .then((res) => res.json())
-        .then((json) => {
+        .then(async (json) => {
           const selectedFilm: filmType = json.results[Math.round(Math.random() * 19)];
-          fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}?language=pt-BR`, options)
+          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}?language=pt-BR`, options)
             .then((res) => res.json())
             .then((json) => {
+              setBlur(true);
               setFilm(json);
-              console.log(json);
+              _film = json;
             });
-          fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/videos?language=pt-BR`, options)
+          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/videos?language=pt-BR`, options)
             .then((res) => res.json())
             .then((json) => {
-              console.log(json?.results);
               setTrailer(json?.results.find((e: any) => e.type === "Trailer"));
+              _trailer = json;
             });
-          fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/watch/providers`, options)
+          setBlur(false);
+          await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/watch/providers`, options)
             .then((res) => res.json())
-            .then((json) => {
+            .then(async (json) => {
               setWatchProviders(json.results["BR"]?.flatrate);
-              console.log(json.results["BR"]?.flatrate);
-              fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/credits?language=pt-BR`, options)
+              _watchProviders = json.results["BR"]?.flatrate;
+              await fetch(`https://api.themoviedb.org/3/movie/${selectedFilm.id}/credits?language=pt-BR`, options)
                 .then((res) => res.json())
                 .then((json) => {
                   setCast(json.cast);
+                  _cast = json.cast;
                 });
             });
+          const newHistory = [...filmHistory, { film: _film, watchProviders: _watchProviders, cast: _cast, trailer: _trailer }];
+          setFilmHistory(newHistory);
+          setFilmHistoryIndex(newHistory.length - 1);
         });
     }
   }, [selectedGenre, lastReset]);
@@ -183,6 +205,34 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
     setRotate(true);
     setLastReset(Date.now());
     setTimeout(() => setRotate(false), 1000); // Remove a rotação após a animação
+  };
+
+  const handleBackHistory = () => {
+    if (filmHistoryIndex > 0) {
+      setBlur(true);
+      setFilmHistoryIndex(filmHistoryIndex - 1);
+      setFilm(filmHistory[filmHistoryIndex - 1].film);
+      setWatchProviders(filmHistory[filmHistoryIndex - 1].watchProviders);
+      setCast(filmHistory[filmHistoryIndex - 1].cast);
+      setTrailer(filmHistory[filmHistoryIndex - 1].trailer);
+      setTimeout(() => {
+        setBlur(false);
+      }, 1);
+    }
+  };
+
+  const handleNextHistory = () => {
+    if (filmHistoryIndex < filmHistory.length - 1) {
+      setBlur(true);
+      setFilmHistoryIndex(filmHistoryIndex + 1);
+      setFilm(filmHistory[filmHistoryIndex + 1].film);
+      setWatchProviders(filmHistory[filmHistoryIndex + 1].watchProviders);
+      setCast(filmHistory[filmHistoryIndex + 1].cast);
+      setTrailer(filmHistory[filmHistoryIndex + 1].trailer);
+      setTimeout(() => {
+        setBlur(false);
+      }, 1);
+    }
   };
 
   return (
@@ -199,7 +249,10 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
           <MdClose onClick={() => setSelectedGenre(undefined)} className={`text-white text-4xl cursor-pointer`} />
         </div>
       </div>
-      <div className="flex pb-20 flex-col items-center w-full h-full overflow-x-hidden overflow-y-auto styled-scroll">
+      <div
+        className={`flex pb-20 flex-col items-center w-full h-full overflow-x-hidden overflow-y-auto styled-scroll ease-out ${
+          blur ? "blur-xl duration-0" : "blur-0 duration-300"
+        }`}>
         <div className="flex-col relative w-full ease-in-out duration-200 flex">
           <div
             style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${film?.backdrop_path})` }}
@@ -283,22 +336,7 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
             </div>
           </div>
         </div>
-        {trailer?.id && (
-          <div className="flex flex-col w-full max-w-xl gap-2 px-4 pt-4">
-            <h1 // Onde assistir
-              className={"text-white text-2xl font-bold"}>
-              Trailer
-            </h1>
-            <iframe
-              width="400"
-              height="230"
-              src={"https://www.youtube.com/embed/" + trailer.key}
-              title="Embed videos and playlists"
-              className="bg-white/5 rounded-lg w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen></iframe>
-          </div>
-        )}
+
         {(watchProviders?.length || 0) > 0 && (
           <div className="flex flex-col w-full max-w-xl gap-2 px-4 pt-4">
             <h1 // Onde assistir
@@ -374,8 +412,36 @@ export default function MovieDisplay({ selectedGenre, setSelectedGenre, filters,
             </div>
           </div>
         )}
+        {trailer?.id && (
+          <div className="flex flex-col w-full max-w-xl gap-2 px-4 pt-4">
+            <h1 // Onde assistir
+              className={"text-white text-2xl font-bold"}>
+              Trailer
+            </h1>
+            <iframe
+              width="400"
+              height="230"
+              src={"https://www.youtube.com/embed/" + trailer.key}
+              title="Embed videos and playlists"
+              className="bg-white/5 rounded-lg w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen></iframe>
+          </div>
+        )}
       </div>
-      <div className="z-10 absolute left-0 bottom-0 md:px-8 md:mb-4 px-2 mb-2 w-full md:justify-end justify-center flex">
+      <div className="z-10 items-end gap-2 absolute left-0 bottom-0 md:px-8 md:mb-4 px-2 mb-2 w-full md:justify-end justify-center flex">
+        <button
+          onClick={() => handleBackHistory()}
+          disabled={filmHistoryIndex === 0}
+          className="cursor-pointer disabled:opacity-50 rounded-full md:w-max flex gap-2 justify-center font-semibold items-center border-white/10 md:bg-black/40 bg-black/75 shadow-lg border text-white backdrop-blur-xl aspect-square h-full p-3">
+          <BiSolidLeftArrow className={`text-white text-3xl md:text-lg`} />
+        </button>
+        <button
+          onClick={() => handleNextHistory()}
+          disabled={filmHistoryIndex === (filmHistory?.length || 0) - 1}
+          className="cursor-pointer disabled:opacity-50 rounded-full md:w-max flex gap-2 justify-center font-semibold items-center border-white/10 md:bg-black/40 bg-black/75 shadow-lg border text-white backdrop-blur-xl aspect-square h-full p-3">
+          <BiSolidRightArrow className={`text-white text-3xl md:text-lg`} />
+        </button>
         <div
           onClick={() => handleRefreshClick()}
           className="cursor-pointer rounded-full md:w-max md:px-8 flex gap-2 justify-center font-semibold items-center border-white/10 md:bg-black/40 bg-black/75 shadow-lg border text-white backdrop-blur-xl w-3/4 py-3">
